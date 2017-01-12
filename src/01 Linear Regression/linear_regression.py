@@ -3,39 +3,40 @@ Created on Jan 5, 2017
 
 @author: anand
 '''
-alpha = 0.1
+alpha = 0.001
 
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-fileData = np.genfromtxt('linreg.txt', delimiter = ',')
+fileData = np.genfromtxt('ex1data2.txt', delimiter = ',')
 
 X = fileData[:,0:2]
 y = fileData[:,2]
 m = np.size(X)
 
-[meanx1, meanx2] = np.mean(X,1) #col1
-[meany1] = np.mean(y,1)
-X[:,0] = (X[:,0]-meanx1)/m
-X[:,1] = (X[:,1]-meanx2)/m
-y[:,0] = (X[:,0]-meany1)/m
+meanVector  = np.ndarray.mean(X,0)
+sigmaVector = np.ndarray.std(X,0)
 
+for row in X:
+    for col in range(np.size(X,1)):
+        row[col] = (row[col]- meanVector[col])/sigmaVector[col]
+    
 columnOf1 = np.ones( (np.size(X,0),1))
 X = np.append(columnOf1, X, 1) # 1 - along column
 
 thetaSet    = np.zeros( (np.size(X,1)) )
 
-iterations =5000 
+iterations =150000
 while iterations >0:
     
     gradientSet = np.zeros( (np.size(X,1)) )
     
-    hFnResult = np.dot(X,thetaSet) - y
+    errorValueVector = np.dot(X,thetaSet) - y
     
-    theta0 = sum( hFnResult* X[:,0]) 
-    theta1 = sum( hFnResult* X[:,1])
-    theta2 = sum( hFnResult* X[:,2])
+    theta0 = sum( errorValueVector* X[:,0]) 
+    theta1 = sum( errorValueVector* X[:,1])
+    theta2 = sum( errorValueVector* X[:,2])
     
     thetaSet[0] -= alpha*theta0 / m
     thetaSet[1] -= alpha*theta1 / m
@@ -52,12 +53,16 @@ projY = np.dot(X,thetaSet)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.scatter(fileData[:,0], fileData[:,1], fileData[:,2], c='b', marker='o')
-ax.scatter(fileData[:,0], fileData[:,1], projY, c='r', marker='o')
+ax.scatter(fileData[:,0], fileData[:,1], projY, c='g', marker='o')
+
+# find Solution for below data point [1, x, y]
+testResult = np.dot([1,-0.44127326, -0.223658],thetaSet)
+ax.scatter( -0.44127326, -0.223658,testResult, c = 'r', marker = 'o')
 ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
 ax.set_zlabel('Z Label')
 
-
+print 'TEST RESULT=', testResult
 plt.show()
 
 #===============================================================================
@@ -77,9 +82,9 @@ plt.show()
 #     
 #     gradientSet = np.zeros( (np.size(X,1)) )
 #     
-#     hFnResult = np.dot(X,thetaSet) - y
-#     theta0 = sum( hFnResult* X[:,0]) 
-#     theta1 = sum( hFnResult* X[:,1])
+#     errorValueVector = np.dot(X,thetaSet) - y
+#     theta0 = sum( errorValueVector* X[:,0]) 
+#     theta1 = sum( errorValueVector* X[:,1])
 #     thetaSet[0] -= alpha*theta0 / m
 #     thetaSet[1] -= alpha*theta1 / m
 #     
